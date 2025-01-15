@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Excel Files and Payment</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            position: relative;
+        }
+
+        .container {
+            width: 80%;
+            max-width: 800px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #007bff;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-size: 18px;
+        }
+
+        input[type="file"], input[type="number"] {
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .error {
+            color: red;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        /* Sign-in button style */
+        .signin-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .signin-button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Wallet Section */
+        .wallet-section {
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .wallet-section h2 {
+            color: #28a745;
+        }
+
+        .payment-section {
+            margin-top: 40px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Sign-In Button (Top Right) -->
+<a href="templates/signin.html">
+    <button class="signin-button">Sign In</button>
+</a>
+
+<div class="container">
+    
+    <h1>Welcome to Land Survey</h1>
+    <p>Upload the required Excel files for land survey data analysis. Ensure that the files contain all the necessary measurements and coordinates.</p>
+
+    <h1>Upload Excel Files</h1>
+    <form id="upload-form" action="templates/upload.html" method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="file1">Excel File 1:</label>
+            <input type="file" name="file1" id="file1" accept=".xls,.xlsx" required>
+        </div>
+
+        <button type="submit">Upload Files</button>
+
+        <!-- Error messages will be displayed here -->
+        <div class="error" id="error-message"></div>
+    </form>
+
+    <!-- Wallet Section -->
+    <div class="wallet-section">
+        <h2>Your Wallet Balance: $<span id="wallet-balance">100.00</span></h2>
+        <form id="add-funds-form">
+            <label for="amount">Add Funds to Wallet:</label>
+            <input type="number" id="amount" name="amount" placeholder="Amount in USD" required min="1" step="any">
+            <button type="submit">Add Funds</button>
+        </form>
+    </div>
+
+    <!-- Payment Section -->
+    <div class="payment-section">
+        <h2>Make Payment</h2>
+        <form id="payment-form">
+            <label for="payment-amount">Amount to Pay:</label>
+            <input type="number" id="payment-amount" name="payment-amount" placeholder="Amount in USD" required min="1" step="any">
+            <button type="submit">Pay Now</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // JavaScript to validate the files before submitting the form
+    document.getElementById('upload-form').addEventListener('submit', function(event) {
+        const fileInputs = [
+            document.getElementById('file1'),
+            document.getElementById('file2'),
+            document.getElementById('file3'),
+            document.getElementById('file4'),
+            document.getElementById('file5')
+        ];
+
+        let valid = true;
+        let errorMessage = '';
+
+        // Check each file input
+        fileInputs.forEach((fileInput, index) => {
+            if (fileInput.files.length === 0) {
+                valid = false;
+                errorMessage += `File ${index + 1} is required.\n`;
+            } else {
+                const file = fileInput.files[0];
+                const fileExtension = file.name.split('.').pop().toLowerCase();
+                if (!['xls', 'xlsx'].includes(fileExtension)) {
+                    valid = false;
+                    errorMessage += `File ${index + 1} is not an Excel file.\n`;
+                }
+            }
+        });
+
+        if (!valid) {
+            event.preventDefault(); // Prevent form submission
+            document.getElementById('error-message').textContent = errorMessage;
+        }
+    });
+
+    // Handle Add Funds to Wallet
+    document.getElementById('add-funds-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const amount = parseFloat(document.getElementById('amount').value);
+        if (amount > 0) {
+            let currentBalance = parseFloat(document.getElementById('wallet-balance').textContent);
+            currentBalance += amount;
+            document.getElementById('wallet-balance').textContent = currentBalance.toFixed(2);
+            alert(`$${amount} added to your wallet!`);
+            document.getElementById('amount').value = '';  // Clear the input field
+        }
+    });
+
+    // Handle Payment
+    document.getElementById('payment-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const paymentAmount = parseFloat(document.getElementById('payment-amount').value);
+        let currentBalance = parseFloat(document.getElementById('wallet-balance').textContent);
+
+        if (paymentAmount > 0 && paymentAmount <= currentBalance) {
+            currentBalance -= paymentAmount;
+            document.getElementById('wallet-balance').textContent = currentBalance.toFixed(2);
+            alert(`Payment of $${paymentAmount} successful!`);
+            document.getElementById('payment-amount').value = '';  // Clear the input field
+        } else {
+            alert("Insufficient balance or invalid payment amount.");
+        }
+    });
+</script>
+
+</body>
+</html>
